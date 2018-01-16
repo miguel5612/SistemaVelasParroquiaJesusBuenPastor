@@ -17,14 +17,14 @@
     double  tiempoAnterior = 0;
     
     void setup()
-   	{
+     {
 
-   	Serial.begin(9600);
+    Serial.begin(9600);
 
-   	Serial.print("Maximo de velas: ");
-   	Serial.println(maxVelas);
-   	Serial.print("Maximo de sensores: ");
-   	Serial.println(maxSensores);
+    Serial.print("Maximo de velas: ");
+    Serial.println(maxVelas);
+    Serial.print("Maximo de sensores: ");
+    Serial.println(maxSensores);
     //declaro las entradas y salidas
     for(int i = 0; i<maxVelas ; i++)
       {
@@ -48,91 +48,95 @@
       digitalWrite(releMP3, LOW);
       digitalWrite(releEspecial, LOW);
 
-   	}
-   	void loop()
-   	{
-   		leerSensores();
-   		contarTiempo(algunaEncendida);
-   		
-   	}
+    }
+    void loop()
+    {
+      leerSensores();
+      contarTiempo(algunaEncendida);
+      apagarEspecial();
+    }
 
-   	void leerSensores(){
-   		for(int k=0; k<maxSensores ; k++){
-      		estado = digitalRead(sensor[k]);
-      		if(estado){
-      			numeroVela = encenderVela(estado);
-				algunaEncendida = true; //encendi una vela :)
-				comprobarEspecial(numeroVela);
-				Serial.print("Encendida la vela numero: ");
-				Serial.println(numeroVela);
-				delay(200);
-      		}
-      	}	
-   	}
+    void leerSensores(){
+      for(int k=0; k<maxSensores ; k++){
+          estado = digitalRead(sensor[k]);
+          if(estado){
+            numeroVela = encenderVela(estado);
+        algunaEncendida = true; //encendi una vela :)
+        comprobarEspecial(numeroVela);
+        Serial.print("Encendida la vela numero: ");
+        Serial.println(numeroVela);
+        delay(200);
+          }
+        } 
+    }
 
-   	int encenderVela(boolean estado){
-   		for(int j = 0;j<=maxVelas;j++){
-   			if(tiempoVelas[j]==0){
-   				tiempoVelas[j] = tiempoEncendido;
-   				Serial.print("Encendida la salida numero: ");
-   				Serial.println(velas[j]);
-   				digitalWrite(velas[j],!estadoApagado);
-   				algunaEncendida = true;
-   				return j; // numeroVela
-   			}
-   		}
-   	}
+    int encenderVela(boolean estado){
+      for(int j = 0;j<=maxVelas;j++){
+        if(tiempoVelas[j]==0){
+          tiempoVelas[j] = tiempoEncendido;
+          Serial.print("Encendida la salida numero: ");
+          Serial.println(velas[j]);
+          digitalWrite(velas[j],!estadoApagado);
+          algunaEncendida = true;
+          return j; // numeroVela
+        }
+      }
+    }
 
-   	void contarTiempo(boolean status){
-   		if(status || tiempoEspecial>0){
-  			//empiezo a contar y a disminuir segundo a segundo
-  			if(tiempoAnterior == 0){
-  				tiempoAnterior = millis();
-   			}else if(millis()-tiempoAnterior >= 1000){
-   				tiempoAnterior = 0;
- 				boolean test = false;
-   				//empiezo a descontar segundo a segundo para todas las velas encendidas
-   				if(status){
-	   				for(int j = 0;j<=maxVelas;j++){
-	   					if(tiempoVelas[j] > 0){
-	   						tiempoVelas[j] = tiempoVelas[j] - 1;
-	   						test = true;
-	   					}else{
-	   						tiempoVelas[j] = 0;
-	   						digitalWrite(velas[j],estadoApagado);
-	   					}
+void contarTiempo(boolean status){
+    if(status || tiempoEspecial>0){
+        //empiezo a contar y a disminuir segundo a segundo
+        if(tiempoAnterior == 0){
+          tiempoAnterior = millis();
+        }else if(millis()-tiempoAnterior >= 1000){
+        	tiempoAnterior = 0;
+        	boolean test = false;
+          	//empiezo a descontar segundo a segundo para todas las velas encendidas
+          	if(status){
+            	for(int j = 0;j<=maxVelas;j++){
+              		if(tiempoVelas[j] > 0){
+                		tiempoVelas[j] = tiempoVelas[j] - 1;
+                		test = true;
+              		}else{
+                		tiempoVelas[j] = 0;
+                		digitalWrite(velas[j],estadoApagado);
+              		}
 
-	   				}
-   				}
-   				if(especialEncendido && tiempoEspecial>0){
-   						tiempoEspecial = tiempoEspecial - 1;
-   						Serial.print("EL tiempo especial es: ");
-   						Serial.println(tiempoEspecial);
-   					}else{
-   						especialEncendido = false;
-		   				digitalWrite(releEspecial, LOW);
-		   				digitalWrite(releMP3, LOW);
-   						tiempoEspecial = 0;
-   						Serial.println("especial se ha apagado");
-   					}
-   				if(!test){
-   					algunaEncendida = false;
-   					Serial.println("Todas Apagadas");
-   				}	
-   			}
-   		}
-   	}
-
-   	void comprobarEspecial(int numero){
-   		for(int l=0; l<5 ;l++){
-   			if(numero == velasEspeciales[l]){
-   				Serial.println("Especial!!!!");
-   				especialEncendido = true;
-   				digitalWrite(releEspecial, HIGH);
-   				digitalWrite(releMP3, true);
-   				tiempoEspecial = tiempoEspecial + tiempoEspecialMax;
-   				Serial.print("Tiempo Especial= ");
-   				Serial.println(tiempoEspecial);
-   			}
-   		}
-   	}
+            	}
+          	}
+          	if(tiempoEspecial>0){
+            	  tiempoEspecial = tiempoEspecial - 1;
+            	  especialEncendido = true;
+              	  Serial.print("EL tiempo especial es: ");
+              	  Serial.println(tiempoEspecial);
+                  test = true;
+            }
+          	if(!test){
+            	algunaEncendida = false;
+            	Serial.println("Todas Apagadas");
+          	} 
+        }
+    }
+    }
+    void apagarEspecial(){
+    	if(!especialEncendido && tiempoEspecial <= 0 && digitalRead(releMP3)){
+              especialEncendido = false;
+              digitalWrite(releEspecial, LOW);
+              digitalWrite(releMP3, LOW);
+              tiempoEspecial = 0;
+              Serial.println("especial se ha apagado");
+            }
+    }
+    void comprobarEspecial(int numero){
+      for(int l=0; l<5 ;l++){
+        if(numero == velasEspeciales[l]){
+          Serial.println("Especial!!!!");
+          especialEncendido = true;
+          digitalWrite(releEspecial, HIGH);
+          digitalWrite(releMP3, true);
+          tiempoEspecial = tiempoEspecial + tiempoEspecialMax;
+          Serial.print("Tiempo Especial= ");
+          Serial.println(tiempoEspecial);
+        }
+      }
+    }
