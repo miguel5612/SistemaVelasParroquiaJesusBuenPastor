@@ -4,12 +4,12 @@
     const int releEspecial = 5;
     const int releMP3 = 6;
     int tiempoEspecial = 0;
-    const int tiempoEspecialMax = 120; // 2 minutos
-    const boolean estadoApagado = false;
+    int tiempoEspecialMax = random(60,300); // 2 minutos
+    const boolean estadoApagado = true;
     const int tiempoEncendido = 60; // un minuto
     const int maxVelas = 32;
     const int maxSensores = 3;
-
+    const int mute = 7;
     boolean estado = false, algunaEncendida = false, especialEncendido = false;
     int numeroVela=0;
     int tiempoVelas[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -54,12 +54,18 @@
       leerSensores();
       contarTiempo(algunaEncendida);
       apagarEspecial();
+      if(mute){
+      	tiempoEspecialMax = 0;
+      }
     }
 
     void leerSensores(){
       for(int k=0; k<maxSensores ; k++){
           estado = digitalRead(sensor[k]);
           if(estado){
+          	Serial.print("Se ha leido un pulso del sensor que esta en el pin: ");
+          	Serial.println(sensor[k]);
+          	Serial.println("**************************************************");
             numeroVela = encenderVela(estado);
         algunaEncendida = true; //encendi una vela :)
         comprobarEspecial(numeroVela);
@@ -119,7 +125,7 @@ void contarTiempo(boolean status){
     }
     }
     void apagarEspecial(){
-    	if(!especialEncendido && tiempoEspecial <= 0 && digitalRead(releMP3)){
+    	if((especialEncendido && tiempoEspecial <= 0) ||  (tiempoEspecial <= 0 && (digitalRead(releMP3) || digitalRead(releEspecial)))){
               especialEncendido = false;
               digitalWrite(releEspecial, LOW);
               digitalWrite(releMP3, LOW);
@@ -134,6 +140,7 @@ void contarTiempo(boolean status){
           especialEncendido = true;
           digitalWrite(releEspecial, HIGH);
           digitalWrite(releMP3, true);
+          if(tiempoEspecial<tiempoEspecialMax){ tiempoEspecialMax = random(60,500);}
           tiempoEspecial = tiempoEspecial + tiempoEspecialMax;
           Serial.print("Tiempo Especial= ");
           Serial.println(tiempoEspecial);
